@@ -1,547 +1,356 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <link rel="icon" href="ima/icono1.png" type="image/png">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rutas MX — Transporte</title>
-
+  <title>Buscar Rutas - Transporte</title>
   <style>
     :root{
-      --bg:#f4f7fb;
+      --primary:#378f04b0;
+      --accent:#ce1010;
+      --bg:#f6f8fb;
       --card:#ffffff;
+      --text:#0f1720;
       --muted:#6b7280;
-      --accent:#2f9bff;
-      --accent-2:#ff4d4f;
-      --primary:#0b83d6;
-      --radius:14px;
-      --gap:12px;
-      --max-width:1100px;
-      --shadow: 0 8px 28px rgba(15,30,50,0.06);
-      --font-sans: Inter, system-ui, -apple-system, "Helvetica Neue", Arial;
+      --radius:12px;
     }
-    /* Reset & base */
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:var(--font-sans);
-      background:var(--bg);
-      color:#06202a;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:24px;
-      display:flex;
-      justify-content:center;
-    }
+    body{font-family:Inter, system-ui, -apple-system, Arial; margin:0; background:var(--bg); color:var(--text);}
 
-    /* PAGE WRAPPER */
-    .app {
-      width:100%;
-      max-width:var(--max-width);
-      display:flex;
-      gap:18px;
-      align-items:flex-start;
-    }
-
-    /* SIDEBAR (DESLIZABLE) */
-    .sidebar {
-      width:300px;
-      min-width:260px;
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:18px;
-      box-shadow:var(--shadow);
-      position:sticky;
-      top:24px;
-      height:calc(100vh - 48px);
-      overflow:auto;
-      transition:transform .32s ease, box-shadow .2s;
-    }
-    .sidebar.hidden {
-      transform:translateX(-110%);
-      box-shadow:none;
-    }
-    .hamburger-btn{
-      display:none;
-      position:fixed;
-      left:16px;
-      top:16px;
-      z-index:1200;
-      background:var(--card);
-      border-radius:10px;
-      padding:10px;
-      box-shadow:var(--shadow);
-      border:none;
-    }
-
-    /* MAIN */
-    .main {
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-width:0;
-    }
-
-    header.app-header{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:4px;
-    }
-    .brand {
-      font-weight:800;
-      font-size:18px;
-      color:var(--primary);
-    }
-    .clock {
-      margin-left:auto;
-      font-weight:700;
-      color:var(--muted);
-      font-size:13px;
-      background:rgba(11,127,191,0.06);
-      padding:6px 10px;
-      border-radius:10px;
-    }
-
-    /* Search card */
-    .card {
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow:var(--shadow);
-    }
-    .card h2{margin:0 0 8px; font-size:18px}
-    .help { color:var(--muted); font-size:13px; margin-bottom:10px }
-
-    .search-row {
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .search-row input[type=text]{
-      flex:1 1 320px;
-      min-width:150px;
-      padding:12px 14px;
-      border-radius:10px;
-      border:1px solid #e6eef8;
-      font-size:15px;
-      background:#fbfdff;
-    }
-    .search-row button{
-      background:var(--primary);
+    header{
+      background:linear-gradient(90deg,var(--primary),#0a93d0);
       color:#fff;
-      border:none;
-      padding:11px 14px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:700;
-      min-width:96px;
-      transition:transform .08s;
-    }
-    .search-row button:active{transform:scale(.98)}
-
-    .controls {
+      padding:14px 16px;
       display:flex;
-      gap:8px;
       align-items:center;
-      margin-left:auto;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z-index:900
     }
-    select{ padding:10px 12px; border-radius:10px; border:1px solid #e6eef8; background:#fff }
+    .hamburger{font-size:26px; cursor:pointer;}
+    .brand{font-weight:800; font-size:18px}
+    .clock{margin-left:auto; font-weight:700; background:rgba(255,255,255,0.12); padding:6px 10px; border-radius:10px}
 
-    .results { margin-top:12px }
+    .side-banner{position:fixed; top:0; right:0; width:140px; height:100vh; overflow:hidden; border-left:6px solid rgba(0,0,0,0.04); background:#fff; z-index:100}
+    .side-banner-left{left:0; right:auto; border-left:0; border-right:6px solid rgba(0,0,0,0.04)}
+    .side-banner .slides img{width:100%; height:100%; object-fit:cover; position:absolute; opacity:0; transition:opacity .6s}
+    .side-banner .slides img.active{opacity:1}
 
-    .route {
-      padding:12px;
-      border-radius:10px;
-      border:1px solid #eef6fb;
-      background:linear-gradient(180deg,#fff,#fbfdff);
-      display:flex;
-      flex-direction:column;
-      gap:6px;
+    body{padding:0 140px 40px 140px}
+    @media(max-width:900px){
+      .side-banner{display:none}
+      body{padding:0 12px}
     }
-    .route h3{margin:0; font-size:16px}
+
+    .container{max-width:980px; margin:18px auto}
+    .card{background:var(--card); padding:18px; border-radius:var(--radius); box-shadow:0 8px 30px rgba(11,127,191,0.06)}
+
+    .search-row{display:flex; gap:10px; align-items:center}
+    .search-row input[type=text]{flex:1; padding:12px 14px; border-radius:10px; border:1px solid #e6eef8; font-size:16px}
+    .search-row button{background:var(--primary); color:#fff; border:none; padding:12px 14px; border-radius:10px; cursor:pointer; font-weight:700}
+
+    .info-box{margin-top:14px; padding:12px; border-radius:10px; background:#fbfcff; border:1px solid #eef6fb}
+
+    .results{margin-top:16px}
+    .route{padding:12px; border-radius:10px; border:1px solid #eef6fb; margin-bottom:10px; background:white}
+    .route h3{margin:0 0 6px}
     .meta{font-size:13px; color:var(--muted)}
 
-    /* MAP */
-    .map-wrap{
-      margin-top:6px;
-      border-radius:var(--radius);
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      background:#e9eef6;
-      border:1px solid rgba(10,20,40,0.03);
-    }
+    /* MAPA */
     #map{
+      height:450px;
       width:100%;
-      height:520px; /* desktop default */
-      display:block;
+      border-radius:10px;
+      border:1px solid #e6eef8;
+      margin-top:16px;
     }
 
-    /* footer */
-    footer {
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-      margin-top:12px;
-    }
+    .menu{position:fixed; left:0; top:0; bottom:0; width:260px; background:#fff; padding:18px; transform:translateX(-110%); transition:transform .28s; z-index:1000; box-shadow:0 30px 60px rgba(2,6,23,0.12)}
+    .menu.open{transform:translateX(0)}
+    .menu a{display:block; padding:10px 6px; color:var(--text); text-decoration:none; font-weight:600}
 
-    /* small UI */
-    .small-btn{
-      background:#f5f8fb;
-      border:1px solid #e8eef8;
-      padding:8px 10px;
-      border-radius:8px;
-      cursor:pointer;
-    }
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; z-index:999}
+    .overlay.show{display:block}
 
-    /* MOBILE / TABLET ADAPTIVE */
-    @media (max-width:1000px){
-      .sidebar{ width:280px; min-width:240px }
-    }
-    @media (max-width:900px){
-      body{ padding:12px }
-      .app{ gap:12px }
-      .hamburger-btn{ display:block }
-      .sidebar{
-        position:fixed;
-        left:16px;
-        top:68px;
-        max-height:calc(100vh - 88px);
-        z-index:1200;
-        transform:translateX(-110%);
-      }
-      .sidebar.visible{ transform:translateX(0) }
-      .app{ padding-left:0; padding-right:0 }
-      .brand{ font-size:16px }
-      .clock{ display:none }
-      .card{ padding:12px }
-      #map{ height:56vh } /* mobile taller map */
-    }
-
-    @media (max-width:600px){
-      .app{ flex-direction:column; align-items:stretch }
-      .sidebar{ position:fixed; left:12px; top:70px; width:86%; max-width:380px; }
-      .search-row input[type=text]{ flex-basis:100%; }
-      .controls{ width:100%; justify-content:flex-start; }
-      .route{ padding:10px }
-      #map{ height:62vh }
-      .hamburger-btn{ left:12px; top:12px }
-    }
-
-    @media (max-width:420px){
-      #map{ height:68vh }
-      .search-row button, select{ padding:10px 12px }
-      .brand{ font-size:15px }
-    }
-
-    /* nice focus */
-    input:focus, select:focus, button:focus{ outline: none; box-shadow: 0 4px 14px rgba(11,127,191,0.08); }
+    footer{max-width:980px; margin:12px auto; color:var(--muted); font-size:13px; text-align:center}
+    select{padding:8px; border-radius:8px; border:1px solid #e6eef8}
   </style>
 </head>
 <body>
 
-  <!-- HAMBURGER (mobile) -->
-  <button class="hamburger-btn" id="hambBtn" aria-label="Abrir menú">☰</button>
+  <div class="menu" id="menu">
+    <strong>Menú</strong>
+    <a class="tab" href="buzon.html">📬 Buzón</a>
+    <a href="conocenos.html">📘 Quiénes somos</a>
+    <a href="escuelas.html">🏫 Escuelas</a>
+    <a href="contacto.html">📞 Contacto</a>
+  </div>
+  <div class="overlay" id="overlay"></div>
 
-  <div class="app">
+  <header>
+    <div class="hamburger" id="hamb">☰</div>
+    <div class="brand">Rutas MX</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </header>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar hidden" id="sidebar">
-      <h3 style="margin:0 0 8px">Menú</h3>
-      <nav style="display:flex;flex-direction:column;gap:8px">
-        <a href="buzon.html">📬 Buzón</a>
-        <a href="conocenos.html">📘 Quiénes somos</a>
-        <a href="escuelas.html">🏫 Escuelas</a>
-        <a href="contacto.html">📞 Contacto</a>
-      </nav>
-
-      <hr style="margin:12px 0">
-
-      <div style="font-weight:700; margin-bottom:8px">Rutas</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <!-- quick links to show first 6 routes -->
-        <button class="small-btn" data-id="M1">[M] Nueva Era</button>
-        <button class="small-btn" data-id="M2">[M] Centro y Torres</button>
-        <button class="small-btn" data-id="M3">[M] Kilómetros &amp; Fresnos</button>
-        <button class="small-btn" data-id="V1">[V] Reforma Walmart</button>
-        <button class="small-btn" data-id="V2">[V] Joya Carrizo</button>
-      </div>
-
-      <hr style="margin:12px 0">
-
-      <div style="font-size:13px; color:var(--muted)">
-        © Proyecto School Ride
-      </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="main">
-
-      <header class="app-header">
-        <div class="brand">Rutas MX</div>
-        <div class="clock" id="clock">--:--:--</div>
-      </header>
-
-      <section class="card" aria-labelledby="buscar-title">
-        <h2 id="buscar-title">Buscar rutas de transporte</h2>
-        <div class="help">Escribe el nombre de la ruta o una parada. Ej.: <em>Ruta 5</em> o <em>Terminal Central</em></div>
-
-        <div class="search-row" role="search">
-          <input type="text" id="q" placeholder="Escribe ruta o parada..." aria-label="Buscar ruta o parada" />
-          <button id="searchBtn">Buscar</button>
-
-          <div class="controls">
-            <select id="turnoSelect" title="Filtrar por turno">
-              <option value="all">Todos los turnos</option>
-              <option value="matutino">Matutino</option>
-              <option value="vespertino">Vespertino</option>
-            </select>
-
-            <select id="rutaPick" aria-label="Seleccionar ruta">
-              <option value="">-- Selecciona ruta --</option>
-            </select>
-
-            <button id="showRouteBtn" class="small-btn">Mostrar</button>
-          </div>
-        </div>
-
-        <div class="results" id="results" style="margin-top:12px;">
-          <div class="meta">Sin resultados aún. Realiza una búsqueda.</div>
-        </div>
-
-      </section>
-
-      <section class="map-wrap card" aria-label="Mapa">
-        <div id="map" role="application"></div>
-      </section>
-
-      <footer>© PROTECTO SCHOOL RIDE — PROCEDIMIENTO Y TRABAJO BASE HTML.</footer>
-
-    </main>
+  <div class="side-banner side-banner-left" id="side-left">
+    <div class="slides"></div>
+  </div>
+  <div class="side-banner" id="side-right">
+    <div class="slides"></div>
   </div>
 
-  <script>
-    /* ---------------- RUTAS (normalizadas) ---------------- */
-    const ROUTES = [
-      { id:'M1', turno:'matutino', name:'Nueva Era', stops:['IMSS Eva Sámano','Escuela Himno Nacional Nueva Era'], times:['07:30','15:00'] },
-      { id:'M2', turno:'matutino', name:'Centro y Torres', stops:['Chedraui Washington','Smart López de Lara','Vidrios y Cristales Las Torres','María de la Luz y Rastro Municipal'], times:['07:30','15:00'] },
-      { id:'M3', turno:'matutino', name:'Kilómetros y Fresnos', stops:['Smart Colinas','Entrada a Palmares','Puente Peatonal El Faro','Gasolinera Pemex Carr. Nacional','Aeropuerto y Anzures'], times:['07:30','15:00'] },
-      { id:'M4', turno:'matutino', name:'Villas y Oradel', stops:['Oxxo Villas San Miguel','Oxxo San Armando y Blvd San Patricio','Oradel Campanario','Oxxo Memphis y Berna'], times:['07:30','15:00'] },
-      { id:'M5', turno:'matutino', name:'Colorines y Valles', stops:['Secundaria 80 Rea y Prometeo','Oxxo Colorines Rea y Clío','Valles de Anáhuac Calle 22 y 5a Ave'], times:['07:30','15:00'] },
-      { id:'M6', turno:'matutino', name:'Olivos', stops:['Prestigio y Estados Unidos','Rea y Mérito','Oxxo Rea y Triunfo','Canseco y González'], times:['07:30','15:00'] },
-      { id:'M7', turno:'matutino', name:'Revolución Tuxpan', stops:['Revolución y Tuxpan','Entrada a Lomas del Río'], times:['07:30','15:00'] },
-      { id:'M8', turno:'matutino', name:'Reservas', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
-      { id:'M9', turno:'matutino', name:'Reservas BIS', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
-      { id:'M10', turno:'matutino', name:'Solidaridad', stops:['Eva Sámano y Revolución','Eva Sámano y Río Colorado','Revolución y Río Verde'], times:['07:30','15:00'] },
-      { id:'M11', turno:'matutino', name:'Voluntad y Joya', stops:['Aeropuerto y Gutiérrez','Aeropuerto y Río Verde','Smart Revolución','Río Nilo y Mayas'], times:['07:30','15:00'] },
-      { id:'M12', turno:'matutino', name:'Chapala', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['07:30','15:00'] },
-      { id:'M13', turno:'matutino', name:'Chapala BIS', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango','Ferretería Elizondo Emilio Madero'], times:['07:30','15:00'] },
+  <div class="container">
+    <div class="card" id="buscar">
+      <h2>Buscar rutas de transporte</h2>
+      <p class="info-box">Escribe el nombre de la ruta o una parada. Ej.: <em>Ruta 5</em> o <em>Terminal Central</em></p>
 
-      { id:'V1', turno:'vespertino', name:'Reforma Walmart', stops:['Soriana Reforma','Walmart Casa del Adulto Mayor','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['17:00','21:30'] },
-      { id:'V2', turno:'vespertino', name:'Joya Carrizo', stops:['Aeropuerto y Dr. Mier','Dr. Mier y Mazatlán Oxxo','Soriana Carrizo','Revolución y Tuxpan','Río Nilo y Mayas','Valles de Anáhuac Calle 22'], times:['17:00','21:30'] },
-      { id:'V3', turno:'vespertino', name:'Reservas Colorines', stops:['Oxxo Rea y Triunfo','Oxxo Rea y Clío','Carlos Canseco y Prometeo'], times:['17:00','21:30'] },
-      { id:'V4', turno:'vespertino', name:'Hidalgo Centro', stops:['González y Parque Narciso Mendoza','Guerrero y Héroes de Nacataz','Perú y Calle América','Chedraui Hipódromo'], times:['17:00','21:30'] },
-      { id:'V5', turno:'vespertino', name:'La Fe Villas', stops:['Soriana La Fe','Rotonda Villas San Miguel','Campanario y Río Bravo','Oxxo Memphis y Berna'], times:['17:00','21:30'] },
-      { id:'V6', turno:'vespertino', name:'Olivos Voluntad', stops:['Oxxo Rea y Triunfo','Río Nilo y Mayas','Entrada a Lomas del Río'], times:['17:00','21:30'] }
-    ];
-
-    /* ---------------- MAPA ---------------- */
-    let map, geocoder, markers=[], polyline=null;
-    function initMap(){
-      map = new google.maps.Map(document.getElementById("map"), {
-        center:{lat:27.476, lng:-99.55},
-        zoom:12,
-        mapTypeId: 'roadmap'
-      });
-      geocoder = new google.maps.Geocoder();
-      populateRouteSelector();
-    }
-
-    function geocode(address){
-      return new Promise(resolve=>{
-        geocoder.geocode({address: address + " Nuevo Laredo"}, (results, status)=>{
-          if(status==="OK" && results?.[0]) resolve(results[0].geometry.location);
-          else resolve(null);
-        });
-      });
-    }
-
-    async function drawRouteById(id){
-      const r = ROUTES.find(x=>x.id===id);
-      if(!r) return alert("Ruta no encontrada");
-
-      if(polyline) polyline.setMap(null);
-      markers.forEach(m=>m.setMap(null));
-      markers=[];
-
-      const coords = [];
-      for(const s of r.stops){
-        const loc = await geocode(s);
-        if(loc){
-          coords.push({lat:loc.lat(), lng:loc.lng()});
-          const m = new google.maps.Marker({position:loc, map, title:s});
-          markers.push(m);
-        }
-      }
-
-      if(coords.length>=2){
-        polyline = new google.maps.Polyline({
-          path: coords,
-          geodesic:true,
-          strokeColor: (r.turno === "matutino") ? "#0066FF" : "#FF3333",
-          strokeWeight:5,
-          strokeOpacity:0.95
-        });
-        polyline.setMap(map);
-        map.panTo(coords[0]);
-        map.setZoom(13);
-      }
-
-      resultsEl.innerHTML = `
-        <div class="route">
-          <h3>${r.name} <small class="meta">(${r.id})</small></h3>
-          <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" - ")}</div>
-          <div class="meta">Paradas: ${r.stops.join(" · ")}</div>
+      <div class="search-row">
+        <input type="text" id="q" placeholder="Escribe ruta o parada..." />
+        <button id="searchBtn">Buscar</button>
+        <div style="margin-left:8px" class="flex">
+          <select id="turnoSelect">
+            <option value="all">Todos los turnos</option>
+            <option value="matutino">Matutino</option>
+            <option value="vespertino">Vespertino</option>
+          </select>
+          <select id="rutaPick">
+            <option value="">-- Selecciona ruta --</option>
+          </select>
+          <button id="showRouteBtn">Mostrar</button>
         </div>
-      `;
-    }
+      </div>
 
-    /* ---------------- UI / BÚSQUEDA ---------------- */
-    const qInput = document.getElementById('q');
-    const resultsEl = document.getElementById('results');
-    function populateRouteSelector(){
-      const sel = document.getElementById('rutaPick');
-      sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
-      ROUTES.forEach(r=>{
-        const opt = document.createElement('option');
-        opt.value = r.id;
-        opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
-        sel.appendChild(opt);
-      });
-    }
+      <div class="results" id="results">
+        <div class="meta" style="margin-top:10px">Sin resultados aún. Realiza una búsqueda.</div>
+      </div>
 
-    document.getElementById('showRouteBtn').addEventListener('click', ()=>{
-      const id = document.getElementById('rutaPick').value;
-      if(!id) return alert("Selecciona una ruta");
-      drawRouteById(id);
-      if(window.innerWidth < 900) toggleSidebar(false);
+      <div id="map"></div>
+
+    </div>
+  </div>
+
+  <footer>© PROTECTO SCHOOL RIDE — PROCEDIMIENTO Y TRABAJO BASE HTML.</footer>
+
+<script>
+/* ---------------- RUTAS NORMALIZADAS ---------------- */
+
+const ROUTES = [
+  { id:'M1', turno:'matutino', name:'Nueva Era', stops:['IMSS Eva Sámano','Escuela Himno Nacional Nueva Era'], times:['07:30','15:00'] },
+  { id:'M2', turno:'matutino', name:'Centro y Torres', stops:['Chedraui Washington','Smart López de Lara','Vidrios y Cristales Las Torres','María de la Luz y Rastro Municipal'], times:['07:30','15:00'] },
+  { id:'M3', turno:'matutino', name:'Kilómetros y Fresnos', stops:['Smart Colinas','Entrada a Palmares','Puente Peatonal El Faro','Gasolinera Pemex Carr. Nacional','Aeropuerto y Anzures'], times:['07:30','15:00'] },
+  { id:'M4', turno:'matutino', name:'Villas y Oradel', stops:['Oxxo Villas San Miguel','Oxxo San Armando y Blvd San Patricio','Oradel Campanario','Oxxo Memphis y Berna'], times:['07:30','15:00'] },
+  { id:'M5', turno:'matutino', name:'Colorines y Valles', stops:['Secundaria 80 Rea y Prometeo','Oxxo Colorines Rea y Clío','Valles de Anáhuac Calle 22 y 5a Ave'], times:['07:30','15:00'] },
+  { id:'M6', turno:'matutino', name:'Olivos', stops:['Prestigio y Estados Unidos','Rea y Mérito','Oxxo Rea y Triunfo','Canseco y González'], times:['07:30','15:00'] },
+  { id:'M7', turno:'matutino', name:'Revolución Tuxpan', stops:['Revolución y Tuxpan','Entrada a Lomas del Río'], times:['07:30','15:00'] },
+  { id:'M8', turno:'matutino', name:'Reservas', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
+  { id:'M9', turno:'matutino', name:'Reservas BIS', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
+  { id:'M10', turno:'matutino', name:'Solidaridad', stops:['Eva Sámano y Revolución','Eva Sámano y Río Colorado','Revolución y Río Verde'], times:['07:30','15:00'] },
+  { id:'M11', turno:'matutino', name:'Voluntad y Joya', stops:['Aeropuerto y Gutiérrez','Aeropuerto y Río Verde','Smart Revolución','Río Nilo y Mayas'], times:['07:30','15:00'] },
+  { id:'M12', turno:'matutino', name:'Chapala', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['07:30','15:00'] },
+  { id:'M13', turno:'matutino', name:'Chapala BIS', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango','Ferretería Elizondo Emilio Madero'], times:['07:30','15:00'] },
+
+  { id:'V1', turno:'vespertino', name:'Reforma Walmart', stops:['Soriana Reforma','Walmart Casa del Adulto Mayor','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['17:00','21:30'] },
+  { id:'V2', turno:'vespertino', name:'Joya Carrizo', stops:['Aeropuerto y Dr. Mier','Dr. Mier y Mazatlán Oxxo','Soriana Carrizo','Revolución y Tuxpan','Río Nilo y Mayas','Valles de Anáhuac Calle 22'], times:['17:00','21:30'] },
+  { id:'V3', turno:'vespertino', name:'Reservas Colorines', stops:['Oxxo Rea y Triunfo','Oxxo Rea y Clío','Carlos Canseco y Prometeo'], times:['17:00','21:30'] },
+  { id:'V4', turno:'vespertino', name:'Hidalgo Centro', stops:['González y Parque Narciso Mendoza','Guerrero y Héroes de Nacataz','Perú y Calle América','Chedraui Hipódromo'], times:['17:00','21:30'] },
+  { id:'V5', turno:'vespertino', name:'La Fe Villas', stops:['Soriana La Fe','Rotonda Villas San Miguel','Campanario y Río Bravo','Oxxo Memphis y Berna'], times:['17:00','21:30'] },
+  { id:'V6', turno:'vespertino', name:'Olivos Voluntad', stops:['Oxxo Rea y Triunfo','Río Nilo y Mayas','Entrada a Lomas del Río'], times:['17:00','21:30'] }
+];
+
+/* ---------------- MAPA ---------------- */
+
+let map, geocoder, markers=[], polyline=null;
+const colors = ["#0066ff","#ff3b30","#ff9500","#34c759","#5856d6","#ff2d55","#5ac8fa","#4cd964"];
+
+function initMap(){
+  map = new google.maps.Map(document.getElementById("map"), {
+    center:{lat:27.476, lng:-99.55},
+    zoom:12
+  });
+  geocoder = new google.maps.Geocoder();
+  populateRouteSelector();
+}
+
+function geocode(address){
+  return new Promise(resolve=>{
+    geocoder.geocode({address: address + " Nuevo Laredo"}, (results, status)=>{
+      if(status==="OK" && results?.[0]) resolve(results[0].geometry.location);
+      else resolve(null);
     });
+  });
+}
 
-    document.getElementById('turnoSelect').addEventListener('change', (e)=>{
-      const turno = e.target.value;
-      const sel = document.getElementById('rutaPick');
-      sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
-      ROUTES.filter(r=> turno==='all' ? true : r.turno===turno)
-            .forEach(r=>{
-              const opt = document.createElement('option');
-              opt.value = r.id;
-              opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
-              sel.appendChild(opt);
-            });
+async function drawRouteById(id){
+  const r = ROUTES.find(x=>x.id===id);
+  if(!r) return alert("Ruta no encontrada");
+
+  if(polyline) polyline.setMap(null);
+  markers.forEach(m=>m.setMap(null));
+  markers=[];
+
+  const coords = [];
+  for(const s of r.stops){
+    const loc = await geocode(s);
+    if(loc){
+      coords.push({lat:loc.lat(), lng:loc.lng()});
+      const m = new google.maps.Marker({position:loc, map, title:s});
+      markers.push(m);
+    }
+  }
+
+  if(coords.length>=2){
+    polyline = new google.maps.Polyline({
+      path: coords,
+      geodesic:true,
+      strokeColor: (r.turno === "matutino") ? "#0066FF" : "#FF3333",
+      strokeWeight:5,
+      strokeOpacity:0.95
     });
+    polyline.setMap(map);
+    map.panTo(coords[0]);
+    map.setZoom(13);
+  }
 
-    function search(query){
-      query = (query||'').trim().toLowerCase();
-      if(!query){
-        resultsEl.innerHTML = '<div class="meta">Escribe algo para buscar.</div>';
-        return;
-      }
+  resultsEl.innerHTML = `
+    <div class="route">
+      <h3>${r.name} <small class="meta">(${r.id})</small></h3>
+      <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" - ")}</div>
+      <div class="meta">Paradas: ${r.stops.join(" · ")}</div>
+    </div>
+  `;
+}
 
-      const matches = ROUTES.filter(r=>
-        r.name.toLowerCase().includes(query) ||
-        r.id.toLowerCase()===query ||
-        r.stops.some(s=> s.toLowerCase().includes(query))
-      );
+function hashCode(str){ let h=0; for(let i=0;i<str.length;i++) h=((h<<5)-h)+str.charCodeAt(i); return h; }
 
-      if(matches.length===0){
-        resultsEl.innerHTML = '<div class="meta">No se encontraron rutas coincidentes.</div>';
-        return;
-      }
+/* ---------------- BÚSQUEDA ---------------- */
 
-      resultsEl.innerHTML = '';
-      matches.forEach((r)=>{
-        const div = document.createElement('div');
-        div.className = 'route';
-        div.innerHTML = `
-          <h3>${r.name} <small class="meta">(${r.id})</small></h3>
-          <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" • ")}</div>
-          <div class="meta">Paradas: ${r.stops.join(' · ')}</div>
-          <div style="margin-top:8px">
-            <button data-id="${r.id}" class="showBtn small-btn">Mostrar en mapa</button>
-          </div>
-        `;
-        resultsEl.appendChild(div);
-      });
+const qInput = document.getElementById('q');
+const resultsEl = document.getElementById('results');
 
-      document.querySelectorAll('.showBtn').forEach(b=>{
-        b.addEventListener('click', e=>{
-          const id = e.currentTarget.getAttribute('data-id');
-          drawRouteById(id);
-          if(window.innerWidth < 900) toggleSidebar(false);
+function populateRouteSelector(){
+  const sel = document.getElementById('rutaPick');
+  sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
+  ROUTES.forEach(r=>{
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
+    sel.appendChild(opt);
+  });
+}
+
+document.getElementById('showRouteBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('rutaPick').value;
+  if(!id) return alert("Selecciona una ruta");
+  drawRouteById(id);
+});
+
+document.getElementById('turnoSelect').addEventListener('change', (e)=>{
+  const turno = e.target.value;
+  const sel = document.getElementById('rutaPick');
+  sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
+  ROUTES.filter(r=> turno==='all' ? true : r.turno===turno)
+        .forEach(r=>{
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
+          sel.appendChild(opt);
         });
-      });
-    }
+});
 
-    document.getElementById('searchBtn').addEventListener('click', ()=> search(qInput.value));
-    qInput.addEventListener('keydown', e=>{ if(e.key==='Enter') search(qInput.value); });
+function search(query){
+  query = (query||'').trim().toLowerCase();
+  if(!query){
+    resultsEl.innerHTML = '<div class="meta">Escribe algo para buscar.</div>';
+    return;
+  }
 
-    /* ---------------- reloj y banners --------------- */
-    function updateClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
-    setInterval(updateClock,1000); updateClock();
+  const matches = ROUTES.filter(r=> 
+    r.name.toLowerCase().includes(query) ||
+    r.id.toLowerCase()===query ||
+    r.stops.some(s=> s.toLowerCase().includes(query))
+  );
 
-    function populateBanner(bannerId, images){
-      const slides = document.getElementById(bannerId)?.querySelector('.slides');
-      if(!slides) return;
-      slides.innerHTML = '';
-      images.forEach((src,i)=>{
-        const img = document.createElement('img');
-        img.src = src;
-        if(i===0) img.classList.add('active');
-        slides.appendChild(img);
-      });
-    }
-    populateBanner('side-left', ['ima/IMG2.jpeg','ima/IMG3.jpeg']);
-    populateBanner('side-right', ['ima/IMG1.jpeg','ima/IMG2.jpeg']);
+  if(matches.length===0){
+    resultsEl.innerHTML = '<div class="meta">No se encontraron rutas coincidentes.</div>';
+    return;
+  }
 
-    /* -------------- SIDEBAR / HAMBURGER --------------- */
-    const hambBtn = document.getElementById('hambBtn');
-    const sidebar = document.getElementById('sidebar');
+  resultsEl.innerHTML = '';
+  matches.forEach((r)=>{
+    const div = document.createElement('div');
+    div.className = 'route';
+    div.innerHTML = `
+      <h3>${r.name} <small class="meta">(${r.id})</small></h3>
+      <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" • ")}</div>
+      <div class="meta">Paradas: ${r.stops.join(' · ')}</div>
+      <div style="margin-top:8px">
+        <button data-id="${r.id}" class="showBtn">Mostrar en mapa</button>
+      </div>
+    `;
+    resultsEl.appendChild(div);
+  });
 
-    function toggleSidebar(open){
-      if(open){
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('visible');
-      } else {
-        sidebar.classList.add('hidden');
-        sidebar.classList.remove('visible');
-      }
-    }
-    hambBtn.addEventListener('click', ()=> toggleSidebar(!sidebar.classList.contains('visible')));
-
-    // quick route buttons inside sidebar
-    sidebar.querySelectorAll('button[data-id]').forEach(b=>{
-      b.addEventListener('click', e=>{
-        const id = e.currentTarget.getAttribute('data-id');
-        drawRouteById(id);
-        toggleSidebar(false);
-      });
+  document.querySelectorAll('.showBtn').forEach(b=>{
+    b.addEventListener('click', e=>{
+      const id = e.currentTarget.getAttribute('data-id');
+      drawRouteById(id);
     });
+  });
+}
 
-    /* close sidebar on outside click for mobile */
-    document.addEventListener('click', (e)=>{
-      if(window.innerWidth < 900){
-        if(!sidebar.contains(e.target) && !hambBtn.contains(e.target)){
-          toggleSidebar(false);
-        }
-      }
-    });
+document.getElementById('searchBtn').addEventListener('click', ()=> search(qInput.value));
+qInput.addEventListener('keydown', e=>{ if(e.key==='Enter') search(qInput.value); });
 
-  </script>
+/* ---------------- Reloj ---------------- */
+function updateClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
+setInterval(updateClock,1000); updateClock();
 
-  <!-- Google Maps API (tu API Key ya incluida) -->
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC13gZAM4OVtdJCkNvbcRDSdCDBY4xNwhc&callback=initMap&libraries=places"></script>
+/* ---------------- Banners ---------------- */
+function populateBanner(bannerId, images){
+  const slides = document.getElementById(bannerId).querySelector('.slides');
+  slides.innerHTML = '';
+  images.forEach((src,i)=>{
+    const img = document.createElement('img');
+    img.src = src;
+    if(i===0) img.classList.add('active');
+    slides.appendChild(img);
+  });
+}
+populateBanner('side-left', ['ima/IMG2.jpeg','ima/IMG3.jpeg']);
+populateBanner('side-right', ['ima/IMG1.jpeg','ima/IMG2.jpeg']);
+
+function startBannerSlideshow(bannerId, interval=3000){
+  setInterval(()=>{
+    const imgs = document.getElementById(bannerId).querySelectorAll('.slides img');
+    if(imgs.length<=1) return;
+    let i = [...imgs].findIndex(img=>img.classList.contains('active'));
+    imgs[i].classList.remove('active');
+    i = (i+1)%imgs.length;
+    imgs[i].classList.add('active');
+  }, interval);
+}
+startBannerSlideshow('side-left');
+startBannerSlideshow('side-right');
+
+/* ---------------- Menú ---------------- */
+const hamb = document.getElementById('hamb');
+const menu = document.getElementById('menu');
+const overlay = document.getElementById('overlay');
+
+function toggleMenu(open){
+  menu.classList.toggle('open', open);
+  overlay.classList.toggle('show', open);
+}
+
+hamb.addEventListener('click', ()=> toggleMenu(!menu.classList.contains('open')));
+overlay.addEventListener('click', ()=> toggleMenu(false));
+
+</script>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC13gZAM4OVtdJCkNvbcRDSdCDBY4xNwhc&callback=initMap&libraries=places"></script>
 
 </body>
 </html>
