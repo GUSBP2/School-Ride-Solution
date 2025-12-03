@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <link rel="icon" href="ima/icono1.png" type="image/png">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Buscar Rutas - Transporte</title>
@@ -57,8 +58,14 @@
     .route h3{margin:0 0 6px}
     .meta{font-size:13px; color:var(--muted)}
 
-    .map{height:320px; margin-top:16px; border-radius:10px; overflow:hidden; border:1px solid #e6eef8}
-    .map iframe{width:100%; height:100%; border:0}
+    /* MAPA */
+    #map{
+      height:450px;
+      width:100%;
+      border-radius:10px;
+      border:1px solid #e6eef8;
+      margin-top:16px;
+    }
 
     .menu{position:fixed; left:0; top:0; bottom:0; width:260px; background:#fff; padding:18px; transform:translateX(-110%); transition:transform .28s; z-index:1000; box-shadow:0 30px 60px rgba(2,6,23,0.12)}
     .menu.open{transform:translateX(0)}
@@ -68,6 +75,7 @@
     .overlay.show{display:block}
 
     footer{max-width:980px; margin:12px auto; color:var(--muted); font-size:13px; text-align:center}
+    select{padding:8px; border-radius:8px; border:1px solid #e6eef8}
   </style>
 </head>
 <body>
@@ -102,155 +110,156 @@
       <div class="search-row">
         <input type="text" id="q" placeholder="Escribe ruta o parada..." />
         <button id="searchBtn">Buscar</button>
+        <div style="margin-left:8px" class="flex">
+          <select id="turnoSelect">
+            <option value="all">Todos los turnos</option>
+            <option value="matutino">Matutino</option>
+            <option value="vespertino">Vespertino</option>
+          </select>
+          <select id="rutaPick">
+            <option value="">-- Selecciona ruta --</option>
+          </select>
+          <button id="showRouteBtn">Mostrar</button>
+        </div>
       </div>
 
       <div class="results" id="results">
         <div class="meta" style="margin-top:10px">Sin resultados aún. Realiza una búsqueda.</div>
       </div>
 
-      <div class="map">
-        <iframe id="mapFrame"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4397.584175920249!2d-99.6012461237503!3d27.463233076323373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x86611900789d2717%3A0x70d52995af982d40!2sUniversidad!5e1!3m2!1sen!2smx!4v1764658913181!5m2!1sen!2smx"
-          allowfullscreen
-          loading="lazy">
-        </iframe>
-      </div>
+      <div id="map"></div>
+
     </div>
   </div>
 
   <footer>© PROTECTO SCHOOL RIDE — PROCEDIMIENTO Y TRABAJO BASE HTML.</footer>
 
 <script>
-/* ------------------ RUTAS ------------------ */
+/* ---------------- RUTAS NORMALIZADAS ---------------- */
+
 const ROUTES = [
-  { 
-    id:'R1', 
-    name:'Ruta 1 - villas de san miguel',
-    stops:['Terminal Centra','Av. Reforma','Plaza Mayor'],
-    times:['6:30','07:00'],
-    map:"villas de san migue Nuevo Laredo"
-  },
+  { id:'M1', turno:'matutino', name:'Nueva Era', stops:['IMSS Eva Sámano','Escuela Himno Nacional Nueva Era'], times:['07:30','15:00'] },
+  { id:'M2', turno:'matutino', name:'Centro y Torres', stops:['Chedraui Washington','Smart López de Lara','Vidrios y Cristales Las Torres','María de la Luz y Rastro Municipal'], times:['07:30','15:00'] },
+  { id:'M3', turno:'matutino', name:'Kilómetros y Fresnos', stops:['Smart Colinas','Entrada a Palmares','Puente Peatonal El Faro','Gasolinera Pemex Carr. Nacional','Aeropuerto y Anzures'], times:['07:30','15:00'] },
+  { id:'M4', turno:'matutino', name:'Villas y Oradel', stops:['Oxxo Villas San Miguel','Oxxo San Armando y Blvd San Patricio','Oradel Campanario','Oxxo Memphis y Berna'], times:['07:30','15:00'] },
+  { id:'M5', turno:'matutino', name:'Colorines y Valles', stops:['Secundaria 80 Rea y Prometeo','Oxxo Colorines Rea y Clío','Valles de Anáhuac Calle 22 y 5a Ave'], times:['07:30','15:00'] },
+  { id:'M6', turno:'matutino', name:'Olivos', stops:['Prestigio y Estados Unidos','Rea y Mérito','Oxxo Rea y Triunfo','Canseco y González'], times:['07:30','15:00'] },
+  { id:'M7', turno:'matutino', name:'Revolución Tuxpan', stops:['Revolución y Tuxpan','Entrada a Lomas del Río'], times:['07:30','15:00'] },
+  { id:'M8', turno:'matutino', name:'Reservas', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
+  { id:'M9', turno:'matutino', name:'Reservas BIS', stops:['Rea y Poseidón','Canseco y Prometeo'], times:['07:30','15:00'] },
+  { id:'M10', turno:'matutino', name:'Solidaridad', stops:['Eva Sámano y Revolución','Eva Sámano y Río Colorado','Revolución y Río Verde'], times:['07:30','15:00'] },
+  { id:'M11', turno:'matutino', name:'Voluntad y Joya', stops:['Aeropuerto y Gutiérrez','Aeropuerto y Río Verde','Smart Revolución','Río Nilo y Mayas'], times:['07:30','15:00'] },
+  { id:'M12', turno:'matutino', name:'Chapala', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['07:30','15:00'] },
+  { id:'M13', turno:'matutino', name:'Chapala BIS', stops:['Rotonda UAT','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango','Ferretería Elizondo Emilio Madero'], times:['07:30','15:00'] },
 
-  { 
-    id:'R2',
-    name:'Ruta 2 - NUEVA ERA',
-    stops:['Terminal Norte','Parque Industrial','Universidad'],
-    times:['05:20','05:50'],
-    map:"NUEVA ERA Nuevo Laredo"
-  },
-
-  { 
-    id:'R3',
-    name:'Ruta 3 - INFONAVIT',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"INFONAVIT Nuevo Laredo"
-  },
-
-  { 
-    id:'R4',
-    name:'Ruta 4 - TORRES,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"TORRES,NUEVO LAREDO"
-  },
-
-  { 
-    id:'R5',
-    name:'Ruta 5 - TUXPAN, REVOLUCION,LOMAS , RIO VERDE, CALLE REVOLUCION,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15',],
-    map:"TUXPAN, REVOLUCION,LOMAS , RIO VERDE, CALLE REVOLUCION,NUEVO LAREDO"
-  },
-
-  { 
-    id:'R6',
-    name:'Ruta 6 - SOLIDARIDAD,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"SOLIDARIDAD,NUEVO LAREDO"
-  },
-
-  { 
-    id:'R7',
-    name:'Ruta 7 - RESERVAS, CANSECO,CAMPANARIO,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"RESERVAS, CANSECO,CAMPANARIO,NUEVO LAREDO"
-  },
-
-  { 
-    id:'R8',
-    name:'Ruta 8 - OLIVOS 1,2 Y GUERREROS DEL SOL NUEVO LAREDO',
-    stops:['OLIVOS 1,2','GUERREROS DEL SOL','UT NUEVO LAREDO'],
-    times:['06:15','07:15'],
-    map:"OLIVOS 1,2 Y GUERREROS DEL SOL NUEVO LAREDO"
-  },
-  { 
-    id:'R9',
-    name:'Ruta 9 - CENTRO,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"CENTRO,NUEVO LAREDO"
-  },
-  { 
-    id:'R10',
-    name:'Ruta 10 - SEC 80,COLORINES,VALLES DE ANAHUAc',
-    stops:['SEC 80','COLORINES','VALLES DE ANAHUAC,UT NUEVO LAREDO'],
-    times:['06:15','07:15'],
-    map:"SEC 80,COLORINES, y VALLES DE ANAHUAC"
-  },
-  { 
-    id:'R11',
-    name:'Ruta 11 - VOLUNTADES,NUEVO LAREDO',
-    stops:['voluntan','Universidad tecnologica de nuevo laredo'],
-    times:['06:15','07:15'],
-    map:"VOLUNTADES,Universidad tecnologica de nuevo laredo"
-  },
-  { 
-    id:'R12',
-    name:'Ruta 12 - KILOMETROS, COLINAS Y PALMARES,NUEVO LAREDO',
-    stops:['COLINAS','PALMARES','UT NUEVO LAREDO'],
-    times:['06:15','07:15'],
-    map:"KILOMETROS, COLINAS Y PALMARES,NUEVO LAREDO"
-  },
-  { 
-    id:'R13',
-    name:'Ruta 13 - PANCHO VILLA,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"PANCHO VILLA,NUEVO LAREDO"
-  },
-  { 
-    id:'R14',
-    name:'Ruta 14 - LA 150,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"LA 150,NUEVO LAREDO"
-  },
-  { 
-    id:'R15',
-    name:'Ruta 15 - LOS FRESNOS,NUEVO LAREDO',
-    stops:['Terminal Central','Aeropuerto','Zona Hotelera'],
-    times:['06:15','07:15'],
-    map:"LOS FRESNOS,NUEVO LAREDO"
-  },
-
+  { id:'V1', turno:'vespertino', name:'Reforma Walmart', stops:['Soriana Reforma','Walmart Casa del Adulto Mayor','Lago de Chapala y Sistemas','Iglesias Calderón y Doroteo Arango'], times:['17:00','21:30'] },
+  { id:'V2', turno:'vespertino', name:'Joya Carrizo', stops:['Aeropuerto y Dr. Mier','Dr. Mier y Mazatlán Oxxo','Soriana Carrizo','Revolución y Tuxpan','Río Nilo y Mayas','Valles de Anáhuac Calle 22'], times:['17:00','21:30'] },
+  { id:'V3', turno:'vespertino', name:'Reservas Colorines', stops:['Oxxo Rea y Triunfo','Oxxo Rea y Clío','Carlos Canseco y Prometeo'], times:['17:00','21:30'] },
+  { id:'V4', turno:'vespertino', name:'Hidalgo Centro', stops:['González y Parque Narciso Mendoza','Guerrero y Héroes de Nacataz','Perú y Calle América','Chedraui Hipódromo'], times:['17:00','21:30'] },
+  { id:'V5', turno:'vespertino', name:'La Fe Villas', stops:['Soriana La Fe','Rotonda Villas San Miguel','Campanario y Río Bravo','Oxxo Memphis y Berna'], times:['17:00','21:30'] },
+  { id:'V6', turno:'vespertino', name:'Olivos Voluntad', stops:['Oxxo Rea y Triunfo','Río Nilo y Mayas','Entrada a Lomas del Río'], times:['17:00','21:30'] }
 ];
 
-/* ------------------ FUNCIONES ------------------ */
+/* ---------------- MAPA ---------------- */
 
-// 🔵 Cambiar ubicación del mapa sin API KEY
-function updateMap(location){
-  const iframe = document.getElementById("mapFrame");
-  const newUrl = "https://www.google.com/maps?q=" + encodeURIComponent(location) + "&output=embed";
-  iframe.src = newUrl;
+let map, geocoder, markers=[], polyline=null;
+const colors = ["#0066ff","#ff3b30","#ff9500","#34c759","#5856d6","#ff2d55","#5ac8fa","#4cd964"];
+
+function initMap(){
+  map = new google.maps.Map(document.getElementById("map"), {
+    center:{lat:27.476, lng:-99.55},
+    zoom:12
+  });
+  geocoder = new google.maps.Geocoder();
+  populateRouteSelector();
 }
+
+function geocode(address){
+  return new Promise(resolve=>{
+    geocoder.geocode({address: address + " Nuevo Laredo"}, (results, status)=>{
+      if(status==="OK" && results?.[0]) resolve(results[0].geometry.location);
+      else resolve(null);
+    });
+  });
+}
+
+async function drawRouteById(id){
+  const r = ROUTES.find(x=>x.id===id);
+  if(!r) return alert("Ruta no encontrada");
+
+  if(polyline) polyline.setMap(null);
+  markers.forEach(m=>m.setMap(null));
+  markers=[];
+
+  const coords = [];
+  for(const s of r.stops){
+    const loc = await geocode(s);
+    if(loc){
+      coords.push({lat:loc.lat(), lng:loc.lng()});
+      const m = new google.maps.Marker({position:loc, map, title:s});
+      markers.push(m);
+    }
+  }
+
+  if(coords.length>=2){
+    polyline = new google.maps.Polyline({
+      path: coords,
+      geodesic:true,
+      strokeColor: (r.turno === "matutino") ? "#0066FF" : "#FF3333",
+      strokeWeight:5,
+      strokeOpacity:0.95
+    });
+    polyline.setMap(map);
+    map.panTo(coords[0]);
+    map.setZoom(13);
+  }
+
+  resultsEl.innerHTML = `
+    <div class="route">
+      <h3>${r.name} <small class="meta">(${r.id})</small></h3>
+      <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" - ")}</div>
+      <div class="meta">Paradas: ${r.stops.join(" · ")}</div>
+    </div>
+  `;
+}
+
+function hashCode(str){ let h=0; for(let i=0;i<str.length;i++) h=((h<<5)-h)+str.charCodeAt(i); return h; }
+
+/* ---------------- BÚSQUEDA ---------------- */
 
 const qInput = document.getElementById('q');
 const resultsEl = document.getElementById('results');
 
-// 🔍 Buscar rutas
+function populateRouteSelector(){
+  const sel = document.getElementById('rutaPick');
+  sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
+  ROUTES.forEach(r=>{
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
+    sel.appendChild(opt);
+  });
+}
+
+document.getElementById('showRouteBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('rutaPick').value;
+  if(!id) return alert("Selecciona una ruta");
+  drawRouteById(id);
+});
+
+document.getElementById('turnoSelect').addEventListener('change', (e)=>{
+  const turno = e.target.value;
+  const sel = document.getElementById('rutaPick');
+  sel.innerHTML = '<option value="">-- Selecciona ruta --</option>';
+  ROUTES.filter(r=> turno==='all' ? true : r.turno===turno)
+        .forEach(r=>{
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = `[${r.turno[0].toUpperCase()}] ${r.name} (${r.times.join("-")})`;
+          sel.appendChild(opt);
+        });
+});
+
 function search(query){
   query = (query||'').trim().toLowerCase();
   if(!query){
@@ -259,7 +268,7 @@ function search(query){
   }
 
   const matches = ROUTES.filter(r=> 
-    r.name.toLowerCase().includes(query) || 
+    r.name.toLowerCase().includes(query) ||
     r.id.toLowerCase()===query ||
     r.stops.some(s=> s.toLowerCase().includes(query))
   );
@@ -270,38 +279,36 @@ function search(query){
   }
 
   resultsEl.innerHTML = '';
-  matches.forEach(r=>{
+  matches.forEach((r)=>{
     const div = document.createElement('div');
     div.className = 'route';
     div.innerHTML = `
       <h3>${r.name} <small class="meta">(${r.id})</small></h3>
+      <div class="meta">Turno: ${r.turno} • Horario: ${r.times.join(" • ")}</div>
       <div class="meta">Paradas: ${r.stops.join(' · ')}</div>
+      <div style="margin-top:8px">
+        <button data-id="${r.id}" class="showBtn">Mostrar en mapa</button>
+      </div>
     `;
     resultsEl.appendChild(div);
   });
 
-  // 🔵 Mover el mapa a la primera coincidencia
-  if(matches[0].map){
-    updateMap(matches[0].map);
-  }
+  document.querySelectorAll('.showBtn').forEach(b=>{
+    b.addEventListener('click', e=>{
+      const id = e.currentTarget.getAttribute('data-id');
+      drawRouteById(id);
+    });
+  });
 }
 
-/* ------------------ Eventos ------------------ */
+document.getElementById('searchBtn').addEventListener('click', ()=> search(qInput.value));
+qInput.addEventListener('keydown', e=>{ if(e.key==='Enter') search(qInput.value); });
 
-document.getElementById('searchBtn')
-  .addEventListener('click', ()=> search(qInput.value));
-
-qInput.addEventListener('keydown', e=>{
-  if(e.key==='Enter') search(qInput.value);
-});
-
-/* ------------------ Reloj ------------------ */
-function updateClock(){
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
-}
+/* ---------------- Reloj ---------------- */
+function updateClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString(); }
 setInterval(updateClock,1000); updateClock();
 
-/* ------------------ Banners ------------------ */
+/* ---------------- Banners ---------------- */
 function populateBanner(bannerId, images){
   const slides = document.getElementById(bannerId).querySelector('.slides');
   slides.innerHTML = '';
@@ -312,7 +319,6 @@ function populateBanner(bannerId, images){
     slides.appendChild(img);
   });
 }
-
 populateBanner('side-left', ['ima/IMG2.jpeg','ima/IMG3.jpeg']);
 populateBanner('side-right', ['ima/IMG1.jpeg','ima/IMG2.jpeg']);
 
@@ -329,7 +335,7 @@ function startBannerSlideshow(bannerId, interval=3000){
 startBannerSlideshow('side-left');
 startBannerSlideshow('side-right');
 
-/* ------------------ Menú ------------------ */
+/* ---------------- Menú ---------------- */
 const hamb = document.getElementById('hamb');
 const menu = document.getElementById('menu');
 const overlay = document.getElementById('overlay');
@@ -343,5 +349,8 @@ hamb.addEventListener('click', ()=> toggleMenu(!menu.classList.contains('open'))
 overlay.addEventListener('click', ()=> toggleMenu(false));
 
 </script>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC13gZAM4OVtdJCkNvbcRDSdCDBY4xNwhc&callback=initMap&libraries=places"></script>
+
 </body>
 </html>
